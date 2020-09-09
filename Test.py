@@ -88,6 +88,8 @@ def draw_window(window, bird):
 
 def main():
     clock = pygame.time.Clock()
+    color_light = (170, 170, 170)
+    color_dark = (100, 100, 100)
 
     bird = FlappyBird(200, 200)
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -96,6 +98,11 @@ def main():
     while run:
         clock.tick(30)
         mouse = pygame.mouse.get_pos()
+        if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
+            pygame.draw.rect(window, color_light, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
+
+        else:
+            pygame.draw.rect(window, color_dark, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
