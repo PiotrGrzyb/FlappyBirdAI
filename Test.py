@@ -10,7 +10,7 @@ BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "b
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird2.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird3.png")))]
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "pipe.png")))
-BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "base.png")))
+GROUND_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "base.png")))
 BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bg.png")))
 
 
@@ -86,6 +86,77 @@ def draw_window(window, bird):
     pygame.display.update()
 
 
+class Pipe:
+    GAPS = 200
+    P_VELOCITY = 5
+
+    def __init__(self, x):
+        self.x = x
+        self.height = 0
+        self.top = 0
+        self.bot = 0
+        self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
+        self.BOT_PIPE = PIPE_IMG
+
+        self.checkpoint = False
+        self.set_height()
+
+    def set_height(self):
+        self.height = random.randrange(50, 450, 1)
+        self.top = self.height - self.TOP_PIPE.get_height()
+        self.bot = self.height + self.GAPS
+
+    def move(self):
+        self.x -= self.P_VELOCITY
+
+    def draw(self, window):
+        window.blit(self.TOP_PIPE, (self.x, self.top))
+        window.blit(self.BOT_PIPE, (self.x, self.bot))
+
+    def collision(self, bird):
+        bird_mask = bird.get_mask()
+        top_mask = pygame.mask.from_surface(self.TOP_PIPE)
+        bot_mask = pygame.mask.from_surface(self.BOT_PIPE)
+
+        top_offset = (self.x - bird.x, self.top - round(bird.y))
+        bot_offset = (self.x - bird.x, self.bot - round(bird.y))
+
+        # bot/top_point powinno zwrócić NULL jeśli nie ma kolizji
+
+        bot_point = bird_mask.overlap(bot_mask, bot_offset)
+        top_point = bird_mask.overlap(top_mask, top_offset)
+
+        if top_point or bot_point:
+            return True
+
+        return False
+
+
+class Ground:
+    VELOCITY = 5
+    WIDTH = GROUND_IMG.get_width()
+    IMG = GROUND_IMG
+
+    def __init__(self, y):
+        self.x1 = 0
+        self.x2 = self.WIDTH
+        self.y = y
+
+    def move(self):
+        self.x1 -= self.VELOCITY
+        self.x2 -= self.VELOCITY
+
+        if self.x1 + self.WIDTH < 0:
+            self.x1 = self.x2 + self.WIDTH
+
+        if self.x2 + self.WIDTH < 0:
+            self.x2 = self.x1 + self.WIDTH
+
+    def draw(self, window):
+        window.blit(self.IMG, (self.x1, self.y))
+        window.blit(self.IMG, (self.x2, self.y))
+
+
 def main():
     clock = pygame.time.Clock()
     color_light = (0, 0, 0)
@@ -117,4 +188,3 @@ def main():
 
 
 main()
-
