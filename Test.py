@@ -172,6 +172,7 @@ def main():
     pipes = [Pipe(600)]
     bird = FlappyBird(230, 350)
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+    score = 0
 
     run = True
     while run:
@@ -189,9 +190,25 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
                     pygame.quit()
-        #bird.move()
+
+        # bird.move()
+        add_pipe = False
+        removed = []
         for pipe in pipes:
+            if pipe.collision(bird):
+                pass
+            if pipe.x + pipe.TOP_PIPE.get_width() < 0:
+                removed.append(pipe)
+            if not pipe.checkpoint and pipe.x < bird.x:
+                pipe.checkpoint = True
+                add_pipe = True
             pipe.move()
+        if add_pipe:
+            score += 1
+            pipes.append(Pipe(600))
+        for rmv in removed:
+            pipes.remove(rmv)
+
         ground.move()
         draw_window(window, bird, pipes, ground)
     pygame.quit()
