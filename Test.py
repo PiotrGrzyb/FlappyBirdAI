@@ -3,7 +3,7 @@ import os
 import random
 import time
 
-WINDOW_H = 800
+WINDOW_H = 700
 WINDOW_W = 500
 
 BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird1.png"))),
@@ -80,8 +80,14 @@ class FlappyBird:
         return pygame.mask.from_surface(self.img)
 
 
-def draw_window(window, bird):
+def draw_window(window, bird, pipes, ground):
     window.blit(BG_IMG, (0, 0))
+
+    ground.draw(window)
+
+    for pipe in pipes:
+        pipe.draw(window)
+
     bird.draw(window)
     pygame.display.update()
 
@@ -162,7 +168,9 @@ def main():
     color_light = (0, 0, 0)
     color_dark = (0, 0, 0)
 
-    bird = FlappyBird(200, 200)
+    ground = Ground(630)
+    pipes = [Pipe(600)]
+    bird = FlappyBird(230, 350)
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
 
     run = True
@@ -181,8 +189,9 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
                     pygame.quit()
-        bird.move()
-        draw_window(window, bird)
+        #bird.move()
+        ground.move()
+        draw_window(window, bird, pipes, ground)
     pygame.quit()
     quit()
 
