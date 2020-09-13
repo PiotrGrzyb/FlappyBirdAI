@@ -190,6 +190,8 @@ def main():
                 if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
                     pygame.quit()
         #bird.move()
+        for pipe in pipes:
+            pipe.move()
         ground.move()
         draw_window(window, bird, pipes, ground)
     pygame.quit()
