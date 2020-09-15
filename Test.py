@@ -86,15 +86,16 @@ class FlappyBird:
 def draw_window(window, bird, pipes, ground, score):
     window.blit(BG_IMG, (0, 0))
 
-    score_text = FONT.render("Score: " + str(score), 1, (255,255,255))
-    window.blit(score_text, (WINDOW_W - 10 - score_text.get_width(), 10))
-
     ground.draw(window)
 
     for pipe in pipes:
         pipe.draw(window)
 
     bird.draw(window)
+
+    score_text = FONT.render("Score: " + str(score), 1, (255, 255, 255))
+    window.blit(score_text, (WINDOW_W - 10 - score_text.get_width(), 10))
+
     pygame.display.update()
 
 
