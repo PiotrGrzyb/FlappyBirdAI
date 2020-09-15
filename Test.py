@@ -6,6 +6,9 @@ import time
 WINDOW_H = 700
 WINDOW_W = 500
 
+pygame.font.init()
+FONT = pygame.font.SysFont("comicsans", 50)
+
 BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird1.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird2.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird3.png")))]
@@ -80,8 +83,11 @@ class FlappyBird:
         return pygame.mask.from_surface(self.img)
 
 
-def draw_window(window, bird, pipes, ground):
+def draw_window(window, bird, pipes, ground, score):
     window.blit(BG_IMG, (0, 0))
+
+    score_text = FONT.render("Score: " + str(score), 1, (255,255,255))
+    window.blit(score_text, (WINDOW_W - 10 - score_text.get_width(), 10))
 
     ground.draw(window)
 
@@ -209,8 +215,11 @@ def main():
         for rmv in removed:
             pipes.remove(rmv)
 
+        if bird.y + bird.img.get_height() > 630:
+            pass
+
         ground.move()
-        draw_window(window, bird, pipes, ground)
+        draw_window(window, bird, pipes, ground, score)
     pygame.quit()
     quit()
 
