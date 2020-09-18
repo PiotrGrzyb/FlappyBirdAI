@@ -172,8 +172,8 @@ class Ground:
 
 def main():
     clock = pygame.time.Clock()
-    color_light = (0, 0, 0)
-    color_dark = (0, 0, 0)
+    # color_light = (0, 0, 0)
+    # color_dark = (0, 0, 0)
 
     ground = Ground(630)
     pipes = [Pipe(600)]
@@ -184,19 +184,19 @@ def main():
     run = True
     while run:
         clock.tick(30)
-        mouse = pygame.mouse.get_pos()
-        if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
-            pygame.draw.rect(window, color_light, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
+        # mouse = pygame.mouse.get_pos()
+        # if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
+        #    pygame.draw.rect(window, color_light, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
 
-        else:
-            pygame.draw.rect(window, color_dark, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
+        # else:
+        #    pygame.draw.rect(window, color_dark, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
-                    pygame.quit()
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
+        #         pygame.quit()
 
         # bird.move()
         add_pipe = False
