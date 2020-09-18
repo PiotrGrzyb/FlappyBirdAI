@@ -1,3 +1,4 @@
+import neat
 import pygame
 import os
 import random
@@ -170,19 +171,30 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def main():
+def main(genomes, config):
     clock = pygame.time.Clock()
+
     # color_light = (0, 0, 0)
     # color_dark = (0, 0, 0)
 
     ground = Ground(630)
     pipes = [Pipe(600)]
-    bird = FlappyBird(230, 350)
+    birds = []
+    nets = []
+    gen = []
+
+    for g in genomes:
+        net = neat.nn.FeedForwardNetwork(g, config)
+        nets.append(net)
+        birds.append(FlappyBird(230, 350))
+        g.fitness = 0
+        gen.append(g)
+
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     score = 0
 
-    run = True
-    while run:
+    running = True
+    while running:
         clock.tick(30)
         # mouse = pygame.mouse.get_pos()
         # if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
@@ -193,7 +205,7 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                running = False
         # if event.type == pygame.MOUSEBUTTONDOWN:
         #     if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
         #         pygame.quit()
@@ -202,22 +214,35 @@ def main():
         add_pipe = False
         removed = []
         for pipe in pipes:
-            if pipe.collision(bird):
-                pass
+            for x, bird in enumerate(birds):
+                if pipe.collision(bird):
+                    gen[x].fitness -= 1
+                    birds.pop(x)
+                    nets.pop(x)
+                    gen.pop(x)
+
+                if not pipe.checkpoint and pipe.x < bird.x:
+                    pipe.checkpoint = True
+                    add_pipe = True
+
             if pipe.x + pipe.TOP_PIPE.get_width() < 0:
                 removed.append(pipe)
-            if not pipe.checkpoint and pipe.x < bird.x:
-                pipe.checkpoint = True
-                add_pipe = True
             pipe.move()
+
         if add_pipe:
             score += 1
+            for g in gen:
+                g.fitness += 5
             pipes.append(Pipe(600))
+
         for rmv in removed:
             pipes.remove(rmv)
 
-        if bird.y + bird.img.get_height() > 630:
-            pass
+        for x, bird in enumerate(birds):
+            if bird.y + bird.img.get_height() > 630:
+                birds.pop(x)
+                nets.pop(x)
+                gen.pop(x)
 
         ground.move()
         draw_window(window, bird, pipes, ground, score)
@@ -226,3 +251,22 @@ def main():
 
 
 main()
+
+
+def run():
+    config = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReporoduction, neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation, config_file)
+
+    population = neat.Population(config)
+    population.add_reporter(neat.StdOutReporter(True))
+    statistics = neat.StatisticsReporter
+    population.add_reporter(statistics)
+
+    winner = population.run(main, 50)
+
+
+if __name__ == "__main__":
+    local_directory = os.path.dirname(__file__)
+    config_file = os.path.join(local_directory, "config.txt")
+    run(config_file)
