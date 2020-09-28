@@ -197,7 +197,7 @@ def main():
         removed = []
         for pipe in pipes:
             if pipe.collision(bird):
-                bird.remove()
+                return 'YOU HIT THE PIPE'
 
             if pipe.x + pipe.TOP_PIPE.get_width() < 0:
                 removed.append(pipe)
