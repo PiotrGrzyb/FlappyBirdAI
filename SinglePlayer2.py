@@ -1,7 +1,9 @@
+import neat
 import pygame
 import os
 import random
 import time
+import pickle
 
 WINDOW_H = 800
 WINDOW_W = 600
@@ -16,6 +18,8 @@ BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "b
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "pipe.png")))
 GROUND_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("images", "base.png")))
 BG_IMG = pygame.transform.scale(pygame.image.load(os.path.join("images", "bg.png")), (WINDOW_W, WINDOW_H))
+
+GEN = 0
 
 
 class FlappyBird:
@@ -87,10 +91,10 @@ class FlappyBird:
 def draw_window(window, bird, pipes, ground, score):
     window.blit(BG_IMG, (0, 0))
 
+    bird.draw(window)
+
     for pipe in pipes:
         pipe.draw(window)
-
-    bird.draw(window)
 
     score_text = FONT.render("Score: " + str(score), 1, (255, 255, 255))
     window.blit(score_text, (WINDOW_W - 10 - score_text.get_width(), 10))
@@ -182,29 +186,26 @@ def main():
     running = True
     while running:
         clock.tick(30)
-        bird.move()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 quit()
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     bird.jump()
-
+        bird.move()
         add_pipe = False
         removed = []
         for pipe in pipes:
             if pipe.collision(bird):
-                bird.remove()
-
-            if pipe.x + pipe.TOP_PIPE.get_width() < 0:
-                removed.append(pipe)
 
             if not pipe.checkpoint and pipe.x < bird.x:
                 pipe.checkpoint = True
                 add_pipe = True
+
+            if pipe.x + pipe.TOP_PIPE.get_width() < 0:
+                removed.append(pipe)
             pipe.move()
 
         if add_pipe:
@@ -214,7 +215,7 @@ def main():
         for rmv in removed:
             pipes.remove(rmv)
 
-        if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
+        if bird.y + bird.img.get_height() > 730 or bird.y < 0:
             break
 
         ground.move()

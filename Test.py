@@ -268,7 +268,7 @@ def main(genomes, config):
             pipes.remove(rmv)
 
         for x, bird in enumerate(birds):
-            if bird.y + bird.img.get_height() > 630 or bird.y < 0:
+            if bird.y + bird.img.get_height() > 730 or bird.y < 0:
                 birds.pop(x)
                 nets.pop(x)
                 gen.pop(x)
