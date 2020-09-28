@@ -3,10 +3,11 @@ import pygame
 import os
 import random
 import time
+import pickle
 
 WINDOW_H = 800
 WINDOW_W = 600
-VELOCITY_OF_EVERYTHING = 6
+VELOCITY_OF_EVERYTHING = 5
 
 pygame.font.init()
 FONT = pygame.font.SysFont("comicsans", 50)
@@ -38,7 +39,7 @@ class FlappyBird:
         self.img = self.IMG[0]
 
     def jump(self):
-        self.velocity = -10.00
+        self.velocity = -2.1*VELOCITY_OF_EVERYTHING
         self.last_jump = 0
         self.last_height = self.y
 
@@ -184,8 +185,8 @@ def main(genomes, config):
     # color_light = (0, 0, 0)
     # color_dark = (0, 0, 0)
 
-    ground = Ground(WINDOW_H-70)
-    pipes = [Pipe(WINDOW_H-100)]
+    ground = Ground(WINDOW_H - 70)
+    pipes = [Pipe(WINDOW_H - 100)]
     birds = []
     nets = []
     gen = []
@@ -287,7 +288,8 @@ def run(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(main, 50)
-    print('\nBest genome:\n{!s}'.format(winner))
+    with open('winner.pkl', 'wb') as output:
+        pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
