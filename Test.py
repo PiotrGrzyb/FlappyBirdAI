@@ -273,6 +273,9 @@ def main(genomes, config):
                 nets.pop(x)
                 gen.pop(x)
 
+        if score > 100:
+            break
+
         ground.move()
         draw_window(window, birds, pipes, ground, score, GEN)
 
