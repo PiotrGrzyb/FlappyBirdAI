@@ -5,10 +5,6 @@ import random
 import time
 import pickle
 
-x = 450
-y = 30
-os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
-
 WINDOW_H = 800
 WINDOW_W = 600
 VELOCITY_OF_EVERYTHING = 5
@@ -43,7 +39,7 @@ class FlappyBird:
         self.img = self.IMG[0]
 
     def jump(self):
-        self.velocity = -2.1 * VELOCITY_OF_EVERYTHING
+        self.velocity = -2.1*VELOCITY_OF_EVERYTHING
         self.last_jump = 0
         self.last_height = self.y
 
@@ -285,56 +281,8 @@ def run(config_files):
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
 
-def draw_text(text, font, color, surface, x, y):
-    textobj = font.render(text, 1, color)
-    textrect = textobj.get_rect()
-    textrect.topleft = (x, y)
-    surface.blit(textobj, textrect)
+if __name__ == "__main__":
+    local_directory = os.path.dirname(__file__)
+    config_file = os.path.join(local_directory, "config.txt")
+    run(config_file)
 
-
-def main_menu():
-    click = False
-    while True:
-
-        menu_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
-        menu_window.blit(BG_IMG, (0, 0))
-        clock = pygame.time.Clock()
-        mx, my = pygame.mouse.get_pos()
-
-
-
-        button_1 = pygame.Rect(50, 100, 200, 50)
-        button_2 = pygame.Rect(50, 200, 200, 50)
-
-        if button_1.collidepoint((mx, my)):
-            if click:
-                if __name__ == "__main__":
-                    local_directory = os.path.dirname(__file__)
-                    config_file = os.path.join(local_directory, "config.txt")
-                    run(config_file)
-        if button_2.collidepoint((mx, my)):
-            if click:
-                pass
-
-        pygame.draw.rect(menu_window, (255, 255, 255), button_1)
-        pygame.draw.rect(menu_window, (255, 255, 255), button_2)
-
-        draw_text('Main menu', FONT, (255, 255, 255), menu_window, WINDOW_W / 2, 20)
-        draw_text('Teach AI', FONT, (0, 0, 0), menu_window, 70, 110)
-
-        click = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        pygame.display.update()
-        clock.tick(60)
-
-
-main_menu()
