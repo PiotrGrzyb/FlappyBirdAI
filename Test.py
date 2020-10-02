@@ -92,7 +92,7 @@ class FlappyBird:
         return pygame.mask.from_surface(self.img)
 
 
-def draw_window(window, birds, pipes, ground, score, gen):
+def draw_window(window, birds, pipes, ground, score, gen, alive):
     window.blit(BG_IMG, (0, 0))
 
     for pipe in pipes:
@@ -106,6 +106,10 @@ def draw_window(window, birds, pipes, ground, score, gen):
 
     gen_text = FONT.render("Gen: " + str(gen), 1, (255, 255, 255))
     window.blit(gen_text, (10, 10))
+
+    alive_text = FONT.render("Alive: " + str(alive), 1, (255, 255, 255))
+    window.blit(alive_text, (10, 50))
+
     ground.draw(window)
 
     pygame.display.update()
@@ -266,8 +270,10 @@ def main(genomes, config):
         if score > 100:
             break
 
+        alive = len(birds)
+
         ground.move()
-        draw_window(window, birds, pipes, ground, score, GEN)
+        draw_window(window, birds, pipes, ground, score, GEN, alive)
 
 
 def run(config_files):
