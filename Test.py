@@ -182,8 +182,6 @@ def main(genomes, config):
     clock = pygame.time.Clock()
     global GEN
     GEN += 1
-    # color_light = (0, 0, 0)
-    # color_dark = (0, 0, 0)
 
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]
@@ -204,13 +202,6 @@ def main(genomes, config):
     running = True
     while running:
         clock.tick(30)
-        # mouse = pygame.mouse.get_pos()
-        # if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
-        #    pygame.draw.rect(window, color_light, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
-
-        # else:
-        #    pygame.draw.rect(window, color_dark, [WINDOW_W / 2, WINDOW_H / 2, 140, 40])
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -235,11 +226,6 @@ def main(genomes, config):
             if output[0] > 0.5:
                 bird.jump()
 
-        # if event.type == pygame.MOUSEBUTTONDOWN:
-        #     if WINDOW_W / 2 <= mouse[0] <= WINDOW_W / 2 + 140 and WINDOW_H / 2 <= mouse[1] <= WINDOW_H / 2 + 40:
-        #         pygame.quit()
-
-        # bird.move()
         add_pipe = False
         removed = []
         for pipe in pipes:
