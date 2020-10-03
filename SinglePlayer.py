@@ -171,7 +171,7 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def main():
+def single_main():
     clock = pygame.time.Clock()
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]
@@ -221,4 +221,3 @@ def main():
         draw_window(window, bird, pipes, ground, score)
 
 
-main()

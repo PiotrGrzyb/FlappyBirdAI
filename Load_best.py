@@ -175,7 +175,7 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def main(genomes, config):
+def best_main(config):
     clock = pygame.time.Clock()
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]
@@ -246,7 +246,7 @@ def main(genomes, config):
         draw_window(window, bird, pipes, ground, score, GEN)
 
 
-def run(config_files):
+def run_best(config_files):
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction, neat.DefaultSpeciesSet,
                                 neat.DefaultStagnation, config_files)
@@ -256,7 +256,7 @@ def run(config_files):
     statistics = neat.StatisticsReporter()
     population.add_reporter(statistics)
 
-    winner = population.run(main, 50)
+    winner = population.run(best_main, 50)
     with open('winner.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
@@ -264,4 +264,4 @@ def run(config_files):
 if __name__ == "__main__":
     local_directory = os.path.dirname(__file__)
     config_file = os.path.join(local_directory, "config.txt")
-    run(config_file)
+    run_best(config_file)

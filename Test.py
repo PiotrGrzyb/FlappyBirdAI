@@ -4,6 +4,8 @@ import os
 import random
 import time
 import pickle
+import SinglePlayer
+import Load_best
 
 x = 450
 y = 30
@@ -307,10 +309,9 @@ def main_menu():
         clock = pygame.time.Clock()
         mx, my = pygame.mouse.get_pos()
 
-
-
         button_1 = pygame.Rect(50, 100, 200, 50)
         button_2 = pygame.Rect(50, 200, 200, 50)
+        button_3 = pygame.Rect(50, 300, 200, 50)
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -320,13 +321,18 @@ def main_menu():
                     run(config_file)
         if button_2.collidepoint((mx, my)):
             if click:
-                pass
+                SinglePlayer.single_main()
+        if button_3.collidepoint((mx, my)):
+            if click:
+                Load_best.best_main(config_file)
 
         pygame.draw.rect(menu_window, (255, 255, 255), button_1)
         pygame.draw.rect(menu_window, (255, 255, 255), button_2)
+        pygame.draw.rect(menu_window, (255, 255, 255), button_3)
 
         draw_text('Main menu', FONT, (255, 255, 255), menu_window, WINDOW_W / 2, 20)
         draw_text('Teach AI', FONT, (0, 0, 0), menu_window, 70, 110)
+        draw_text('Play', FONT, (0, 0, 0), menu_window, 110, 210)
 
         click = False
         for event in pygame.event.get():
