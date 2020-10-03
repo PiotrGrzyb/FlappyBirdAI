@@ -314,6 +314,7 @@ def main_menu():
         button_1 = pygame.Rect(50, 100, 200, 50)
         button_2 = pygame.Rect(50, 200, 200, 50)
         button_3 = pygame.Rect(50, 300, 200, 50)
+        button_4 = pygame.Rect(50, 400, 200, 50)
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -324,14 +325,20 @@ def main_menu():
         if button_3.collidepoint((mx, my)):
             if click:
                 Load_best.run_best(config_file)
+        if button_4.collidepoint((mx, my)):
+            if click:
+                pygame.quit()
 
         pygame.draw.rect(menu_window, (255, 255, 255), button_1)
         pygame.draw.rect(menu_window, (255, 255, 255), button_2)
         pygame.draw.rect(menu_window, (255, 255, 255), button_3)
+        pygame.draw.rect(menu_window, (255, 255, 255), button_4)
 
         draw_text('Main menu', FONT, (255, 255, 255), menu_window, WINDOW_W / 2, 20)
         draw_text('Teach AI', FONT, (0, 0, 0), menu_window, 70, 110)
         draw_text('Play', FONT, (0, 0, 0), menu_window, 110, 210)
+        draw_text('Load adult', FONT, (0, 0, 0), menu_window, 60, 310)
+        draw_text('Quit', FONT, (0, 0, 0), menu_window, 110, 410)
 
         click = False
         for event in pygame.event.get():
