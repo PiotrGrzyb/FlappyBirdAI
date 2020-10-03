@@ -175,7 +175,7 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def best_main(config):
+def best_main(genomes, config):
     clock = pygame.time.Clock()
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]

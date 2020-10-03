@@ -302,6 +302,8 @@ def draw_text(text, font, color, surface, x, y):
 
 def main_menu():
     click = False
+    local_directory = os.path.dirname(__file__)
+    config_file = os.path.join(local_directory, "config.txt")
     while True:
 
         menu_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -315,16 +317,13 @@ def main_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
-                if __name__ == "__main__":
-                    local_directory = os.path.dirname(__file__)
-                    config_file = os.path.join(local_directory, "config.txt")
-                    run(config_file)
+                run(config_file)
         if button_2.collidepoint((mx, my)):
             if click:
                 SinglePlayer.single_main()
         if button_3.collidepoint((mx, my)):
             if click:
-                Load_best.best_main(config_file)
+                Load_best.run_best(config_file)
 
         pygame.draw.rect(menu_window, (255, 255, 255), button_1)
         pygame.draw.rect(menu_window, (255, 255, 255), button_2)
