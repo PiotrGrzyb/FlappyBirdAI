@@ -4,6 +4,9 @@ import os
 import random
 import time
 import pickle
+import visualize
+
+os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz 2.44.1/bin/'
 
 WINDOW_H = 800
 WINDOW_W = 600

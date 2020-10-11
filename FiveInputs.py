@@ -5,6 +5,8 @@ import random
 import time
 import pickle
 
+import visualize
+
 WINDOW_H = 800
 WINDOW_W = 600
 VELOCITY_OF_EVERYTHING = 5
@@ -278,6 +280,7 @@ def run(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(main, 50)
+    visualize.draw_net(config, winner, True)
     with open('winner.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
