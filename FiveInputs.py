@@ -110,7 +110,7 @@ def draw_window(window, birds, pipes, ground, score, gen):
 
 
 class Pipe:
-    GAPS = 150
+    GAPS = 175
     P_VELOCITY = 5
 
     def __init__(self, x):
@@ -120,7 +120,7 @@ class Pipe:
         self.bot = 0
         self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
         self.BOT_PIPE = PIPE_IMG
-
+        self.middle = 0
         self.checkpoint = False
         self.set_height()
 
@@ -128,7 +128,7 @@ class Pipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
-
+        self.middle = self.height + self.GAPS/2
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
 
@@ -224,7 +224,7 @@ def main(genomes, config):
 
             output = nets[x].activate(
                 (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot), bird.velocity,
-                 abs((pipes[which_pipe].bot - pipes[which_pipe].top)/2)))
+                 abs(bird.y - pipes[which_pipe].middle)))
 
             if output[0] > 0.5:
                 bird.jump()

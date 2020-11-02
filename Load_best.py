@@ -118,7 +118,7 @@ class Pipe:
         self.bot = 0
         self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
         self.BOT_PIPE = PIPE_IMG
-
+        self.middle = 0
         self.checkpoint = False
         self.set_height()
 
@@ -126,6 +126,7 @@ class Pipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
+        self.middle = self.height + self.GAPS/2
 
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
@@ -245,11 +246,6 @@ def best_main(genomes, config):
 
         if score > 100:
             break
-
-        print("BIRD" + " " + str(bird.y))
-        #print("PIPE_TOP"+ " " + str(pipes[which_pipe].top))
-        print("PIPE_BOT"+ " " + str(pipes[which_pipe].bot + pipes[which_pipe].GAPS/2))
-
         ground.move()
         draw_window(window, bird, pipes, ground, score, GEN)
 
