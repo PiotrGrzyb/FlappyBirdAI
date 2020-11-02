@@ -201,7 +201,7 @@ def main(genomes, config):
 
     running = True
     while running:
-        clock.tick(30)
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -259,11 +259,12 @@ def main(genomes, config):
                 nets.pop(x)
                 gen.pop(x)
 
-        if score > 100:
-            break
-
         ground.move()
         draw_window(window, birds, pipes, ground, score, GEN)
+
+        if score > 10:
+            pickle.dump(nets[0], open("winner_4in.pkl", "wb"))
+            break
 
 
 def run_four(config_files):
@@ -277,8 +278,8 @@ def run_four(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(main, 50)
-    with open('winner_4in.pkl', 'wb') as output:
-        pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
+    #with open('winner_4in.pkl', 'wb') as output:
+    #    pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":

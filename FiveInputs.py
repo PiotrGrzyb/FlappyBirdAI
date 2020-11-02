@@ -110,7 +110,7 @@ def draw_window(window, birds, pipes, ground, score, gen):
 
 
 class Pipe:
-    GAPS = 200
+    GAPS = 150
     P_VELOCITY = 5
 
     def __init__(self, x):
@@ -203,7 +203,7 @@ def main(genomes, config):
 
     running = True
     while running:
-        clock.tick(30)
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

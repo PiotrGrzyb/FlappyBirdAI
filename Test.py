@@ -1,3 +1,5 @@
+import gzip
+
 import neat
 import pygame
 import os
@@ -214,7 +216,11 @@ def main(genomes, config):
 
     running = True
     while running:
-        clock.tick(30)
+        clock.tick(60)
+
+        if score > 20:
+            break
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -228,7 +234,10 @@ def main(genomes, config):
                     pygame.quit()
                     quit()
                 if event.key == pygame.K_s:
-                    score = 49
+                    with gzip.open("winner_3in.pkl", 'w', compresslevel=5) as f:
+                        data = (genomes[0], nets[0])
+                        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
         which_pipe = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].TOP_PIPE.get_width():
@@ -280,11 +289,7 @@ def main(genomes, config):
                 nets.pop(x)
                 gen.pop(x)
 
-        if score > 50:
-            break
-
         alive = len(birds)
-
         ground.move()
         draw_window(window, birds, pipes, ground, score, GEN, alive)
 

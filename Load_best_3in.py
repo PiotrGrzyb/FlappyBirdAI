@@ -1,3 +1,5 @@
+import gzip
+
 import neat
 import pygame
 import os
@@ -183,19 +185,16 @@ def best_main(genomes, config):
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]
 
-    with open('winner.pkl', 'rb') as input:
-        best_genome = pickle.load(input)
-    net = neat.nn.FeedForwardNetwork.create(best_genome, config)
+    with gzip.open("winner_3in.pkl") as f:
+        gen, net = pickle.load(f)
     bird = FlappyBird(230, 350)
-    gen = best_genome
 
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     score = 0
 
     running = True
     while running:
-
-        clock.tick(30)
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -211,7 +210,6 @@ def best_main(genomes, config):
             break
 
         bird.move()
-        gen.fitness += 0.1
 
         output = net.activate(
              (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
@@ -245,10 +243,6 @@ def best_main(genomes, config):
 
         if score > 100:
             break
-
-        print("BIRD" + " " + str(bird.y))
-        #print("PIPE_TOP"+ " " + str(pipes[which_pipe].top))
-        print("PIPE_BOT"+ " " + str(pipes[which_pipe].bot + pipes[which_pipe].GAPS/2))
 
         ground.move()
         draw_window(window, bird, pipes, ground, score, GEN)
