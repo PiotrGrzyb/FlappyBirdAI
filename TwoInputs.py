@@ -265,7 +265,7 @@ def main(genomes, config):
         draw_window(window, birds, pipes, ground, score, GEN)
 
 
-def run(config_files):
+def run_two(config_files):
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction, neat.DefaultSpeciesSet,
                                 neat.DefaultStagnation, config_files)
@@ -276,11 +276,11 @@ def run(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(main, 50)
-    with open('winner.pkl', 'wb') as output:
+    with open('winner_2in.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
     local_directory = os.path.dirname(__file__)
     config_file = os.path.join(local_directory, "configTwoInputs.txt")
-    run(config_file)
+    run_two(config_file)

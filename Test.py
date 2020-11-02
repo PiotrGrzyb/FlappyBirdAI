@@ -6,6 +6,9 @@ import time
 import pickle
 import SinglePlayer
 import Load_best
+from FiveInputs import run_five
+from FourInputs import run_four
+from TwoInputs import run_two
 
 x = 450
 y = 30
@@ -17,7 +20,7 @@ VELOCITY_OF_EVERYTHING = 5
 
 pygame.font.init()
 FONT = pygame.font.SysFont("comicsans", 50)
-
+FONT_MAIN_MENU_TITLE = pygame.font.SysFont("comicsans", 75)
 BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird1.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird2.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird3.png")))]
@@ -329,16 +332,19 @@ def choice_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
-                pass
+                config_file = os.path.join(local_directory, "configTwoInputs.txt")
+                run_two(config_file)
         if button_2.collidepoint((mx, my)):
             if click:
-                pass
+                run(config_file)
         if button_3.collidepoint((mx, my)):
             if click:
-                pass
+                config_file = os.path.join(local_directory, "configFourInputs.txt")
+                run_four(config_file)
         if button_4.collidepoint((mx, my)):
             if click:
-                pass
+                config_file = os.path.join(local_directory, "configFiveInputs.txt")
+                run_five(config_file)
         if button_5.collidepoint((mx, my)):
             if click:
                 pass
@@ -355,6 +361,7 @@ def choice_menu():
         pygame.draw.rect(choice_window, (128, 128, 128), button_4)
         pygame.draw.rect(choice_window, (0, 0, 0), button_5)
         pygame.draw.rect(choice_window, (0, 0, 0), button_6)
+        pygame.draw.rect(choice_window, (139, 0, 0), button_7)
 
         draw_text('Choose number of inputs', FONT, (255, 255, 255), choice_window, WINDOW_W / 6, 20)
         draw_text('2', FONT, (0, 0, 0), choice_window, WINDOW_W / 2 - 10, 110)
@@ -388,10 +395,10 @@ def main_menu():
         clock = pygame.time.Clock()
         mx, my = pygame.mouse.get_pos()
 
-        button_1 = pygame.Rect(50, 100, 200, 50)
-        button_2 = pygame.Rect(50, 200, 200, 50)
-        button_3 = pygame.Rect(50, 300, 200, 50)
-        button_4 = pygame.Rect(50, 400, 200, 50)
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 130, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 230, 200, 50)
+        button_3 = pygame.Rect(int(WINDOW_W / 2 - 100), 330, 200, 50)
+        button_4 = pygame.Rect(int(WINDOW_W / 2 - 100), 430, 200, 50)
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -411,11 +418,11 @@ def main_menu():
         pygame.draw.rect(menu_window, (255, 255, 255), button_3)
         pygame.draw.rect(menu_window, (255, 255, 255), button_4)
 
-        draw_text('Main menu', FONT, (255, 255, 255), menu_window, WINDOW_W / 2, 20)
-        draw_text('Teach AI', FONT, (0, 0, 0), menu_window, 70, 110)
-        draw_text('Play', FONT, (0, 0, 0), menu_window, 110, 210)
-        draw_text('Load adult', FONT, (0, 0, 0), menu_window, 60, 310)
-        draw_text('Quit', FONT, (0, 0, 0), menu_window, 110, 410)
+        draw_text('FlappyAI', FONT_MAIN_MENU_TITLE, (255, 255, 255), menu_window, WINDOW_W / 2 - 110, 20)
+        draw_text('Teach AI', FONT, (0, 0, 0), menu_window, WINDOW_W / 2 - 80, 140)
+        draw_text('Play', FONT, (0, 0, 0), menu_window, WINDOW_W / 2 - 40, 240)
+        draw_text('Load adult', FONT, (0, 0, 0), menu_window, WINDOW_W / 2 - 90, 340)
+        draw_text('Quit', FONT, (0, 0, 0), menu_window, WINDOW_W / 2 - 40, 440)
 
         click = False
         for event in pygame.event.get():
