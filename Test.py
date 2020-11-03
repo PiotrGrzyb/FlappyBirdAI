@@ -19,10 +19,12 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
 WINDOW_H = 800
 WINDOW_W = 600
 VELOCITY_OF_EVERYTHING = 5
+DIFF = 0
 
 pygame.font.init()
 FONT = pygame.font.SysFont("comicsans", 50)
 FONT_MAIN_MENU_TITLE = pygame.font.SysFont("comicsans", 75)
+SMALL_FONT = pygame.font.SysFont("comicsans", 25)
 BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird1.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird2.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird3.png")))]
@@ -123,8 +125,54 @@ def draw_window(window, birds, pipes, ground, score, gen, alive):
 
 
 class Pipe:
-    GAPS = 200
     P_VELOCITY = 5
+    GAPS = 200
+
+    def __init__(self, x):
+        self.x = x
+        self.height = 0
+        self.top = 0
+        self.bot = 0
+        self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
+        self.BOT_PIPE = PIPE_IMG
+
+        self.checkpoint = False
+        self.set_height()
+
+    def set_height(self):
+        self.height = random.randrange(50, 450, 1)
+        self.top = self.height - self.TOP_PIPE.get_height()
+        self.bot = self.height + self.GAPS
+
+    def move(self):
+        self.x -= VELOCITY_OF_EVERYTHING
+
+    def draw(self, window):
+        window.blit(self.TOP_PIPE, (self.x, self.top))
+        window.blit(self.BOT_PIPE, (self.x, self.bot))
+
+    def collision(self, bird):
+        bird_mask = bird.get_mask()
+        top_mask = pygame.mask.from_surface(self.TOP_PIPE)
+        bot_mask = pygame.mask.from_surface(self.BOT_PIPE)
+
+        top_offset = (self.x - bird.x, self.top - round(bird.y))
+        bot_offset = (self.x - bird.x, self.bot - round(bird.y))
+
+        # bot/top_point powinno zwrócić NULL jeśli nie ma kolizji
+
+        bot_point = bird_mask.overlap(bot_mask, bot_offset)
+        top_point = bird_mask.overlap(top_mask, top_offset)
+
+        if top_point or bot_point:
+            return True
+
+        return False
+
+
+class HardPipe:
+    P_VELOCITY = 5
+    GAPS = 150
 
     def __init__(self, x):
         self.x = x
@@ -199,7 +247,14 @@ def main(genomes, config):
     GEN += 1
 
     ground = Ground(WINDOW_H - 70)
-    pipes = [Pipe(WINDOW_H - 100)]
+
+    if DIFF == 0:
+        ticking_rate = 30
+        pipes = [Pipe(WINDOW_H - 100)]
+    else:
+        ticking_rate = 60
+        pipes = [HardPipe(WINDOW_H - 100)]
+
     birds = []
     nets = []
     gen = []
@@ -216,7 +271,7 @@ def main(genomes, config):
 
     running = True
     while running:
-        clock.tick(60)
+        clock.tick(ticking_rate)
 
         if score > 20:
             break
@@ -278,7 +333,11 @@ def main(genomes, config):
             score += 1
             for g in gen:
                 g.fitness += 5
-            pipes.append(Pipe(600))
+            if DIFF == 0:
+                pipes.append(Pipe(600))
+            else:
+                pipes.append(HardPipe(600))
+
 
         for rmv in removed:
             pipes.remove(rmv)
@@ -377,6 +436,59 @@ def choice_menu():
         draw_text('7', FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 10, 610)
         draw_text('Back', FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 40, 710)
 
+        if DIFF == 1:
+            draw_text('Hard difficulty', SMALL_FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 150, 760)
+        else:
+            draw_text('Easy difficulty', SMALL_FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 150, 760)
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        clock.tick(60)
+
+
+def difficulty_menu():
+    global DIFF
+    click = False
+    while True:
+
+        difficulty_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        difficulty_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 200, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 300, 200, 50)
+        button_3 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
+
+        if button_1.collidepoint((mx, my)):
+            if click:
+                DIFF = 0
+                choice_menu()
+
+        if button_2.collidepoint((mx, my)):
+            if click:
+                DIFF = 1
+                choice_menu()
+
+        if button_3.collidepoint((mx, my)):
+            if click:
+                main_menu()
+
+        pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
+        pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
+        pygame.draw.rect(difficulty_window, (128, 128, 128), button_3)
+
+        draw_text('Choose difficulty', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 4 + 10, 20)
+        draw_text('Normal', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 60, 210)
+        draw_text('Hard', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 40, 310)
+        draw_text('Back', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 2 - 40, 710)
+
         click = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -407,7 +519,7 @@ def main_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
-                choice_menu()
+                difficulty_menu()
         if button_2.collidepoint((mx, my)):
             if click:
                 SinglePlayer.single_main()
