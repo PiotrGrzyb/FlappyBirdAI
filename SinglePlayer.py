@@ -3,12 +3,15 @@ import os
 import random
 import time
 
+from Test import score_screen
+
 WINDOW_H = 800
 WINDOW_W = 600
 VELOCITY_OF_EVERYTHING = 5
 
 pygame.font.init()
 FONT = pygame.font.SysFont("comicsans", 50)
+FONT_MAIN_MENU_TITLE = pygame.font.SysFont("comicsans", 75)
 
 BIRD_IMG = [pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird1.png"))),
             pygame.transform.scale2x(pygame.image.load(os.path.join("images", "bird2.png"))),
@@ -171,6 +174,14 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+
+
 def single_main():
     clock = pygame.time.Clock()
     ground = Ground(WINDOW_H - 70)
@@ -197,7 +208,7 @@ def single_main():
         removed = []
         for pipe in pipes:
             if pipe.collision(bird):
-                return 'YOU HIT THE PIPE'
+                score_screen(score)
 
             if pipe.x + pipe.TOP_PIPE.get_width() < 0:
                 removed.append(pipe)
@@ -215,9 +226,7 @@ def single_main():
             pipes.remove(rmv)
 
         if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
-            break
+            score_screen(score)
 
         ground.move()
         draw_window(window, bird, pipes, ground, score)
-
-

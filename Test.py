@@ -6,7 +6,6 @@ import os
 import random
 import time
 import pickle
-import SinglePlayer
 import Load_best
 from FiveInputs import run_five
 from FourInputs import run_four
@@ -118,6 +117,22 @@ def draw_window(window, birds, pipes, ground, score, gen, alive):
 
     alive_text = FONT.render("Alive: " + str(alive), 1, (255, 255, 255))
     window.blit(alive_text, (10, 50))
+
+    ground.draw(window)
+
+    pygame.display.update()
+
+
+def draw_window_single(window, bird, pipes, ground, score):
+    window.blit(BG_IMG, (0, 0))
+
+    for pipe in pipes:
+        pipe.draw(window)
+
+    bird.draw(window)
+
+    score_text = FONT.render("Score: " + str(score), 1, (255, 255, 255))
+    window.blit(score_text, (WINDOW_W - 10 - score_text.get_width(), 10))
 
     ground.draw(window)
 
@@ -338,7 +353,6 @@ def main(genomes, config):
             else:
                 pipes.append(HardPipe(600))
 
-
         for rmv in removed:
             pipes.remove(rmv)
 
@@ -364,8 +378,58 @@ def run(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(main, 50)
-    with open('winner_3in.pkl', 'wb') as output:
+    with open('winner.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
+
+
+def single_main():
+    clock = pygame.time.Clock()
+    ground = Ground(WINDOW_H - 70)
+    pipes = [Pipe(WINDOW_H - 100)]
+    bird = FlappyBird(230, 350)
+    window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+    score = 0
+
+    running = True
+    while running:
+        clock.tick(30)
+        bird.move()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                quit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird.jump()
+
+        add_pipe = False
+        removed = []
+        for pipe in pipes:
+            if pipe.collision(bird):
+                score_screen(score)
+
+            if pipe.x + pipe.TOP_PIPE.get_width() < 0:
+                removed.append(pipe)
+
+            if not pipe.checkpoint and pipe.x < bird.x:
+                pipe.checkpoint = True
+                add_pipe = True
+            pipe.move()
+
+        if add_pipe:
+            score += 1
+            pipes.append(Pipe(600))
+
+        for rmv in removed:
+            pipes.remove(rmv)
+
+        if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
+            score_screen(score)
+
+        ground.move()
+        draw_window_single(window, bird, pipes, ground, score)
 
 
 def draw_text(text, font, color, surface, x, y):
@@ -373,6 +437,46 @@ def draw_text(text, font, color, surface, x, y):
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
+
+
+def score_screen(score):
+    click = False
+    while True:
+
+        score_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        score_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 400, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 500, 200, 50)
+
+        if button_1.collidepoint((mx, my)):
+            if click:
+                single_main()
+
+        if button_2.collidepoint((mx, my)):
+            if click:
+                main_menu()
+
+        pygame.draw.rect(score_window, (50, 205, 50), button_1)
+        pygame.draw.rect(score_window, (139, 0, 0), button_2)
+
+        draw_text('Score:', FONT_MAIN_MENU_TITLE, (255, 255, 255), score_window, WINDOW_W / 2 - 80, 120)
+        draw_text(str(score), FONT_MAIN_MENU_TITLE, (255, 255, 255), score_window, WINDOW_W / 2 - 20, 200)
+        draw_text('Retry', FONT, (0, 0, 0), score_window, WINDOW_W / 2 - 50, 410)
+        draw_text('Menu', FONT, (0, 0, 0), score_window, WINDOW_W / 2 - 40, 510)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        clock.tick(60)
 
 
 def choice_menu():
@@ -522,7 +626,7 @@ def main_menu():
                 difficulty_menu()
         if button_2.collidepoint((mx, my)):
             if click:
-                SinglePlayer.single_main()
+                single_main()
         if button_3.collidepoint((mx, my)):
             if click:
                 Load_best.run_best(config_file)
