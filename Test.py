@@ -19,6 +19,7 @@ WINDOW_H = 800
 WINDOW_W = 600
 VELOCITY_OF_EVERYTHING = 5
 DIFF = 0
+INPUTS = 0
 
 pygame.font.init()
 FONT = pygame.font.SysFont("comicsans", 50)
@@ -148,6 +149,7 @@ class Pipe:
         self.height = 0
         self.top = 0
         self.bot = 0
+        self.middle = 0
         self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
         self.BOT_PIPE = PIPE_IMG
 
@@ -158,6 +160,7 @@ class Pipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
+        self.middle = self.height + self.GAPS/2
 
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
@@ -187,13 +190,14 @@ class Pipe:
 
 class HardPipe:
     P_VELOCITY = 5
-    GAPS = 150
+    GAPS = 170
 
     def __init__(self, x):
         self.x = x
         self.height = 0
         self.top = 0
         self.bot = 0
+        self.middle = 0
         self.TOP_PIPE = pygame.transform.flip(PIPE_IMG, False, True)
         self.BOT_PIPE = PIPE_IMG
 
@@ -204,6 +208,7 @@ class HardPipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
+        self.middle = self.height + self.GAPS/2
 
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
@@ -258,7 +263,7 @@ class Ground:
 
 def main(genomes, config):
     clock = pygame.time.Clock()
-    global GEN
+    global GEN, INPUTS
     GEN += 1
 
     ground = Ground(WINDOW_H - 70)
@@ -320,8 +325,9 @@ def main(genomes, config):
             bird.move()
             gen[x].fitness += 0.1
 
-            output = nets[x].activate(
-                (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
+            #output = nets[x].activate(
+            #    (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
+            output = network_activate(nets[x], bird, pipes[which_pipe], INPUTS)
 
             if output[0] > 0.5:
                 bird.jump()
@@ -361,10 +367,26 @@ def main(genomes, config):
                 birds.pop(x)
                 nets.pop(x)
                 gen.pop(x)
-
+        print(INPUTS)
         alive = len(birds)
         ground.move()
         draw_window(window, birds, pipes, ground, score, GEN, alive)
+
+
+def network_activate(network, bird, pipes, inputs):
+    print(inputs)
+    if inputs == 2:
+        out = network.activate((bird.y, abs(bird.y - pipes.height)))
+    elif inputs == 3:
+        out = network.activate((bird.y, abs(bird.y - pipes.height), abs(bird.y - pipes.bot)))
+    elif inputs == 4:
+        out = network.activate((bird.y, abs(bird.y - pipes.height), abs(bird.y - pipes.bot), bird.velocity))
+    elif inputs == 5:
+        out = network.activate((bird.y, abs(bird.y - pipes.height), abs(bird.y - pipes.bot), bird.velocity,
+                                abs(bird.y - pipes.middle)))
+    else:
+        main_menu()
+    return out
 
 
 def run(config_files):
@@ -481,6 +503,7 @@ def score_screen(score):
 
 def choice_menu():
     click = False
+    global INPUTS
     local_directory = os.path.dirname(__file__)
     config_file = os.path.join(local_directory, "config.txt")
     while True:
@@ -500,19 +523,26 @@ def choice_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
+                INPUTS = 2
+                local_directory = os.path.dirname(__file__)
                 config_file = os.path.join(local_directory, "configTwoInputs.txt")
-                run_two(config_file)
+                run(config_file)
         if button_2.collidepoint((mx, my)):
             if click:
+                INPUTS = 3
                 run(config_file)
         if button_3.collidepoint((mx, my)):
             if click:
+                INPUTS = 4
+                local_directory = os.path.dirname(__file__)
                 config_file = os.path.join(local_directory, "configFourInputs.txt")
-                run_four(config_file)
+                run(config_file)
         if button_4.collidepoint((mx, my)):
             if click:
+                INPUTS = 5
+                local_directory = os.path.dirname(__file__)
                 config_file = os.path.join(local_directory, "configFiveInputs.txt")
-                run_five(config_file)
+                run(config_file)
         if button_5.collidepoint((mx, my)):
             if click:
                 pass
