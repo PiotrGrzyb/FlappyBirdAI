@@ -1,15 +1,13 @@
+import datetime
 import gzip
-
 import neat
 import pygame
 import os
 import random
 import time
 import pickle
-import Load_best
-from FiveInputs import run_five
-from FourInputs import run_four
-from TwoInputs import run_two
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 x = 450
 y = 30
@@ -160,7 +158,7 @@ class Pipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
-        self.middle = self.height + self.GAPS/2
+        self.middle = self.height + self.GAPS / 2
 
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
@@ -208,7 +206,7 @@ class HardPipe:
         self.height = random.randrange(50, 450, 1)
         self.top = self.height - self.TOP_PIPE.get_height()
         self.bot = self.height + self.GAPS
-        self.middle = self.height + self.GAPS/2
+        self.middle = self.height + self.GAPS / 2
 
     def move(self):
         self.x -= VELOCITY_OF_EVERYTHING
@@ -292,10 +290,6 @@ def main(genomes, config):
     running = True
     while running:
         clock.tick(ticking_rate)
-
-        if score > 20:
-            break
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -309,10 +303,14 @@ def main(genomes, config):
                     pygame.quit()
                     quit()
                 if event.key == pygame.K_s:
-                    with gzip.open("winner_3in.pkl", 'w', compresslevel=5) as f:
+                    file_name = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
+                        "%H-%M-%S") + ".pkl"
+                    #with gzip.open(str(file_name), 'w', compresslevel=5) as f:
+                    #    data = (genomes[0], nets[0])
+                    #    pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    with open(str(file_name), 'wb') as handle:
                         data = (genomes[0], nets[0])
-                        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-
+                        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
         which_pipe = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].TOP_PIPE.get_width():
@@ -325,7 +323,7 @@ def main(genomes, config):
             bird.move()
             gen[x].fitness += 0.1
 
-            #output = nets[x].activate(
+            # output = nets[x].activate(
             #    (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
             output = network_activate(nets[x], bird, pipes[which_pipe], INPUTS)
 
@@ -367,14 +365,12 @@ def main(genomes, config):
                 birds.pop(x)
                 nets.pop(x)
                 gen.pop(x)
-        print(INPUTS)
         alive = len(birds)
         ground.move()
         draw_window(window, birds, pipes, ground, score, GEN, alive)
 
 
 def network_activate(network, bird, pipes, inputs):
-    print(inputs)
     if inputs == 2:
         out = network.activate((bird.y, abs(bird.y - pipes.height)))
     elif inputs == 3:
@@ -402,19 +398,127 @@ def run(config_files):
     winner = population.run(main, 50)
     with open('winner.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
+        main_menu()
+
+
+def run_best(config_files):
+    config = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReproduction, neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation, config_files)
+
+    population = neat.Population(config)
+    population.run(best_main, 50)
+
+
+def best_main(genomes, config):
+    clock = pygame.time.Clock()
+    ground = Ground(WINDOW_H - 70)
+    pipes = [Pipe(WINDOW_H - 100)]
+
+    Tk().withdraw()
+    filename = askopenfilename()
+    print(filename)
+    os.path.split(filename)
+    finalfilename = os.path.split(filename)[1]
+    print(finalfilename)
+
+    with open('winner_4in.pkl', 'rb') as input:
+        best_genome = pickle.load(input)
+    net = neat.nn.FeedForwardNetwork.create(best_genome, config)
+    bird = FlappyBird(230, 350)
+    gen = best_genome
+
+    window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+    score = 0
+
+    if DIFF == 0:
+        ticking_rate = 30
+        pipes = [Pipe(WINDOW_H - 100)]
+    else:
+        ticking_rate = 60
+        pipes = [HardPipe(WINDOW_H - 100)]
+
+    running = True
+    while running:
+
+        clock.tick(ticking_rate)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
+                    running = False
+
+        which_pipe = 0
+        if bird:
+            if len(pipes) > 1 and bird.x > pipes[0].x + pipes[0].TOP_PIPE.get_width():
+                which_pipe = 1
+        else:
+            running = False
+            break
+
+        bird.move()
+        gen.fitness += 0.1
+
+        output = net.activate(
+            (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
+
+        if output[0] > 0.5:
+            bird.jump()
+
+        add_pipe = False
+        removed = []
+        for pipe in pipes:
+            if pipe.collision(bird):
+                return 1
+
+            if not pipe.checkpoint and pipe.x < bird.x:
+                pipe.checkpoint = True
+                add_pipe = True
+
+            if pipe.x + pipe.TOP_PIPE.get_width() < 0:
+                removed.append(pipe)
+            pipe.move()
+
+        if add_pipe:
+            score += 1
+            if DIFF == 0:
+                pipes.append(Pipe(600))
+            else:
+                pipes.append(HardPipe(610))
+
+        for rmv in removed:
+            pipes.remove(rmv)
+
+        if bird.y + bird.img.get_height() > 730 or bird.y < 0:
+            break
+
+        if score > 100:
+            break
+        ground.move()
+        draw_window_single(window, bird, pipes, ground, score)
 
 
 def single_main():
     clock = pygame.time.Clock()
     ground = Ground(WINDOW_H - 70)
-    pipes = [Pipe(WINDOW_H - 100)]
     bird = FlappyBird(230, 350)
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     score = 0
 
+    if DIFF == 0:
+        ticking_rate = 30
+        pipes = [Pipe(WINDOW_H - 100)]
+    else:
+        ticking_rate = 60
+        pipes = [HardPipe(WINDOW_H - 100)]
+
     running = True
     while running:
-        clock.tick(30)
+        clock.tick(ticking_rate)
         bird.move()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -425,6 +529,9 @@ def single_main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     bird.jump()
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
+                    running = False
 
         add_pipe = False
         removed = []
@@ -442,7 +549,10 @@ def single_main():
 
         if add_pipe:
             score += 1
-            pipes.append(Pipe(600))
+            if DIFF == 0:
+                pipes.append(Pipe(600))
+            else:
+                pipes.append(HardPipe(600))
 
         for rmv in removed:
             pipes.remove(rmv)
@@ -586,6 +696,140 @@ def choice_menu():
         clock.tick(60)
 
 
+def choice_menu_best():
+    click = False
+    global INPUTS
+    local_directory = os.path.dirname(__file__)
+    config_file = os.path.join(local_directory, "config.txt")
+    while True:
+
+        choice_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        choice_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 100, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 200, 200, 50)
+        button_3 = pygame.Rect(int(WINDOW_W / 2 - 100), 300, 200, 50)
+        button_4 = pygame.Rect(int(WINDOW_W / 2 - 100), 400, 200, 50)
+        button_5 = pygame.Rect(int(WINDOW_W / 2 - 100), 500, 200, 50)
+        button_6 = pygame.Rect(int(WINDOW_W / 2 - 100), 600, 200, 50)
+        button_7 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
+
+        if button_1.collidepoint((mx, my)):
+            if click:
+                INPUTS = 2
+                local_directory = os.path.dirname(__file__)
+                config_file = os.path.join(local_directory, "configTwoInputs.txt")
+                run_best(config_file)
+        if button_2.collidepoint((mx, my)):
+            if click:
+                INPUTS = 3
+                run_best(config_file)
+        if button_3.collidepoint((mx, my)):
+            if click:
+                INPUTS = 4
+                local_directory = os.path.dirname(__file__)
+                config_file = os.path.join(local_directory, "configFourInputs.txt")
+                run_best(config_file)
+        if button_4.collidepoint((mx, my)):
+            if click:
+                INPUTS = 5
+                local_directory = os.path.dirname(__file__)
+                config_file = os.path.join(local_directory, "configFiveInputs.txt")
+                run_best(config_file)
+        if button_5.collidepoint((mx, my)):
+            if click:
+                pass
+        if button_6.collidepoint((mx, my)):
+            if click:
+                pass
+        if button_7.collidepoint((mx, my)):
+            if click:
+                main_menu()
+
+        pygame.draw.rect(choice_window, (255, 255, 255), button_1)
+        pygame.draw.rect(choice_window, (255, 255, 255), button_2)
+        pygame.draw.rect(choice_window, (128, 128, 128), button_3)
+        pygame.draw.rect(choice_window, (128, 128, 128), button_4)
+        pygame.draw.rect(choice_window, (0, 0, 0), button_5)
+        pygame.draw.rect(choice_window, (0, 0, 0), button_6)
+        pygame.draw.rect(choice_window, (139, 0, 0), button_7)
+
+        draw_text('Choose number of inputs', FONT, (255, 255, 255), choice_window, WINDOW_W / 6, 20)
+        draw_text('2', FONT, (0, 0, 0), choice_window, WINDOW_W / 2 - 10, 110)
+        draw_text('3', FONT, (0, 0, 0), choice_window, WINDOW_W / 2 - 10, 210)
+        draw_text('4', FONT, (0, 0, 0), choice_window, WINDOW_W / 2 - 10, 310)
+        draw_text('5', FONT, (0, 0, 0), choice_window, WINDOW_W / 2 - 10, 410)
+        draw_text('6', FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 10, 510)
+        draw_text('7', FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 10, 610)
+        draw_text('Back', FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 40, 710)
+
+        if DIFF == 1:
+            draw_text('Hard difficulty', SMALL_FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 150, 760)
+        else:
+            draw_text('Easy difficulty', SMALL_FONT, (255, 255, 255), choice_window, WINDOW_W / 2 - 150, 760)
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        clock.tick(60)
+
+
+def difficulty_menu_best():
+    global DIFF
+    click = False
+    while True:
+
+        difficulty_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        difficulty_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 200, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 300, 200, 50)
+        button_3 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
+
+        if button_1.collidepoint((mx, my)):
+            if click:
+                DIFF = 0
+                choice_menu_best()
+
+        if button_2.collidepoint((mx, my)):
+            if click:
+                DIFF = 1
+                choice_menu_best()
+
+        if button_3.collidepoint((mx, my)):
+            if click:
+                main_menu()
+
+        pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
+        pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
+        pygame.draw.rect(difficulty_window, (128, 128, 128), button_3)
+
+        draw_text('Choose difficulty', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 4 + 10, 20)
+        draw_text('Normal', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 60, 210)
+        draw_text('Hard', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 40, 310)
+        draw_text('Back', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 2 - 40, 710)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        clock.tick(60)
+
+
 def difficulty_menu():
     global DIFF
     click = False
@@ -635,10 +879,57 @@ def difficulty_menu():
         clock.tick(60)
 
 
+def difficulty_menu_single():
+    global DIFF
+    click = False
+    while True:
+
+        difficulty_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        difficulty_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 200, 200, 50)
+        button_2 = pygame.Rect(int(WINDOW_W / 2 - 100), 300, 200, 50)
+        button_3 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
+
+        if button_1.collidepoint((mx, my)):
+            if click:
+                DIFF = 0
+                single_main()
+
+        if button_2.collidepoint((mx, my)):
+            if click:
+                DIFF = 1
+                single_main()
+
+        if button_3.collidepoint((mx, my)):
+            if click:
+                main_menu()
+
+        pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
+        pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
+        pygame.draw.rect(difficulty_window, (128, 128, 128), button_3)
+
+        draw_text('Choose difficulty', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 4 + 10, 20)
+        draw_text('Normal', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 60, 210)
+        draw_text('Hard', FONT, (0, 0, 0), difficulty_window, WINDOW_W / 2 - 40, 310)
+        draw_text('Back', FONT, (255, 255, 255), difficulty_window, WINDOW_W / 2 - 40, 710)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        clock.tick(60)
+
+
 def main_menu():
     click = False
-    local_directory = os.path.dirname(__file__)
-    config_file = os.path.join(local_directory, "config.txt")
     while True:
 
         menu_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -656,10 +947,10 @@ def main_menu():
                 difficulty_menu()
         if button_2.collidepoint((mx, my)):
             if click:
-                single_main()
+                difficulty_menu_single()
         if button_3.collidepoint((mx, my)):
             if click:
-                Load_best.run_best(config_file)
+                difficulty_menu_best()
         if button_4.collidepoint((mx, my)):
             if click:
                 pygame.quit()

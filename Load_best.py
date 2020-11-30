@@ -186,6 +186,7 @@ def best_main(genomes, config):
 
     with open('winner.pkl', 'rb') as input:
         best_genome = pickle.load(input)
+
     net = neat.nn.FeedForwardNetwork.create(best_genome, config)
     bird = FlappyBird(230, 350)
     gen = best_genome
