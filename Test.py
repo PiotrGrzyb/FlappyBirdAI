@@ -259,7 +259,7 @@ class Ground:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def main(genomes, config):
+def evaluate_genomes(genomes, config):
     clock = pygame.time.Clock()
     global GEN, INPUTS
     GEN += 1
@@ -297,7 +297,9 @@ def main(genomes, config):
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    main_menu()
+                    GEN = 0
+                    running = False
+                    main()
                 if event.key == pygame.K_x:
                     running = False
                     pygame.quit()
@@ -381,7 +383,7 @@ def network_activate(network, bird, pipes, inputs):
         out = network.activate((bird.y, abs(bird.y - pipes.height), abs(bird.y - pipes.bot), bird.velocity,
                                 abs(bird.y - pipes.middle)))
     else:
-        main_menu()
+        main()
     return out
 
 
@@ -395,10 +397,10 @@ def run(config_files):
     statistics = neat.StatisticsReporter()
     population.add_reporter(statistics)
 
-    winner = population.run(main, 50)
+    winner = population.run(evaluate_genomes, 50)
     with open('winner.pkl', 'wb') as output:
         pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
-        main_menu()
+        main()
 
 
 def run_best(config_files):
@@ -447,7 +449,7 @@ def best_main(genomes, config):
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    main_menu()
+                    main()
                     running = False
 
         which_pipe = 0
@@ -528,7 +530,7 @@ def single_main():
                 if event.key == pygame.K_SPACE:
                     bird.jump()
                 if event.key == pygame.K_ESCAPE:
-                    main_menu()
+                    main()
                     running = False
 
         add_pipe = False
@@ -587,7 +589,7 @@ def score_screen(score):
 
         if button_2.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(score_window, (50, 205, 50), button_1)
         pygame.draw.rect(score_window, (139, 0, 0), button_2)
@@ -659,7 +661,7 @@ def choice_menu():
                 pass
         if button_7.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(choice_window, (255, 255, 255), button_1)
         pygame.draw.rect(choice_window, (255, 255, 255), button_2)
@@ -744,7 +746,7 @@ def choice_menu_best():
                 pass
         if button_7.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(choice_window, (255, 255, 255), button_1)
         pygame.draw.rect(choice_window, (255, 255, 255), button_2)
@@ -805,7 +807,7 @@ def difficulty_menu_best():
 
         if button_3.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
         pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
@@ -854,7 +856,7 @@ def difficulty_menu():
 
         if button_3.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
         pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
@@ -903,7 +905,7 @@ def difficulty_menu_single():
 
         if button_3.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
 
         pygame.draw.rect(difficulty_window, (50, 205, 50), button_1)
         pygame.draw.rect(difficulty_window, (139, 0, 0), button_2)
@@ -936,7 +938,7 @@ def wrong_inputs_screen():
         button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
         if button_1.collidepoint((mx, my)):
             if click:
-                main_menu()
+                main()
         pygame.draw.rect(wrong_inputs_window, (50, 205, 50), button_1)
         draw_text('Selected network file does not', FONT, (0, 0, 0), wrong_inputs_window, 40, 110)
         draw_text('not have the correct number of', FONT, (0, 0, 0), wrong_inputs_window,  40, 210)
@@ -954,7 +956,7 @@ def wrong_inputs_screen():
         clock.tick(60)
 
 
-def main_menu():
+def main():
     click = False
     while True:
 
@@ -1006,5 +1008,6 @@ def main_menu():
         pygame.display.update()
         clock.tick(60)
 
-
-main_menu()
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
