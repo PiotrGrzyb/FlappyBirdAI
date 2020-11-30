@@ -305,12 +305,12 @@ def main(genomes, config):
                 if event.key == pygame.K_s:
                     file_name = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
                         "%H-%M-%S") + ".pkl"
-                    #with gzip.open(str(file_name), 'w', compresslevel=5) as f:
-                    #    data = (genomes[0], nets[0])
-                    #    pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-                    with open(str(file_name), 'wb') as handle:
+                    with gzip.open(str(file_name), 'w', compresslevel=5) as f:
                         data = (genomes[0], nets[0])
-                        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    # with open(str(file_name), 'wb') as handle:
+                    #    data = (genomes[0], nets[0])
+                    #   pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
         which_pipe = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].TOP_PIPE.get_width():
@@ -422,11 +422,9 @@ def best_main(genomes, config):
     finalfilename = os.path.split(filename)[1]
     print(finalfilename)
 
-    with open('winner_4in.pkl', 'rb') as input:
-        best_genome = pickle.load(input)
-    net = neat.nn.FeedForwardNetwork.create(best_genome, config)
+    with gzip.open(finalfilename) as f:
+        gen, net = pickle.load(f)
     bird = FlappyBird(230, 350)
-    gen = best_genome
 
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     score = 0
@@ -461,10 +459,10 @@ def best_main(genomes, config):
             break
 
         bird.move()
-        gen.fitness += 0.1
-
-        output = net.activate(
-            (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
+        try:
+            output = network_activate(net, bird, pipes[which_pipe], INPUTS)
+        except RuntimeError:
+            wrong_inputs_screen()
 
         if output[0] > 0.5:
             bird.jump()
@@ -473,7 +471,7 @@ def best_main(genomes, config):
         removed = []
         for pipe in pipes:
             if pipe.collision(bird):
-                return 1
+                break
 
             if not pipe.checkpoint and pipe.x < bird.x:
                 pipe.checkpoint = True
@@ -924,6 +922,34 @@ def difficulty_menu_single():
                 if event.button == 1:
                     click = True
 
+        pygame.display.update()
+        clock.tick(60)
+
+
+def wrong_inputs_screen():
+    click = False
+    while True:
+        wrong_inputs_window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        wrong_inputs_window.blit(BG_IMG, (0, 0))
+        clock = pygame.time.Clock()
+        mx, my = pygame.mouse.get_pos()
+        button_1 = pygame.Rect(int(WINDOW_W / 2 - 100), 700, 200, 50)
+        if button_1.collidepoint((mx, my)):
+            if click:
+                main_menu()
+        pygame.draw.rect(wrong_inputs_window, (50, 205, 50), button_1)
+        draw_text('Selected network file does not', FONT, (0, 0, 0), wrong_inputs_window, 40, 110)
+        draw_text('not have the correct number of', FONT, (0, 0, 0), wrong_inputs_window,  40, 210)
+        draw_text('inputs', FONT, (0, 0, 0), wrong_inputs_window, WINDOW_W / 2 - 60, 310)
+        draw_text('Back', FONT, (255, 255, 255), wrong_inputs_window, WINDOW_W / 2 - 40, 710)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
         pygame.display.update()
         clock.tick(60)
 
