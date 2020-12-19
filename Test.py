@@ -9,6 +9,8 @@ import pickle
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
+import visualize
+
 x = 450
 y = 30
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
@@ -36,7 +38,6 @@ GEN = 0
 class FlappyBird:
     IMG = BIRD_IMG
     ROTATE = 25
-    VELOCITY = 20
     ANIMATION_FRAME = 5
 
     def __init__(self, x, y):
@@ -58,8 +59,8 @@ class FlappyBird:
         self.last_jump += 1
         way = self.velocity * self.last_jump + 1.5 * self.last_jump ** 2
 
-        if way >= 16:
-            way = 16
+        if way >= 15:
+            way = 15
 
         if way < 0:
             way -= 2
@@ -175,8 +176,6 @@ class Pipe:
         top_offset = (self.x - bird.x, self.top - round(bird.y))
         bot_offset = (self.x - bird.x, self.bot - round(bird.y))
 
-        # bot/top_point powinno zwrócić NULL jeśli nie ma kolizji
-
         bot_point = bird_mask.overlap(bot_mask, bot_offset)
         top_point = bird_mask.overlap(top_mask, top_offset)
 
@@ -235,7 +234,6 @@ class HardPipe:
 
 
 class Ground:
-    VELOCITY = 5
     WIDTH = GROUND_IMG.get_width()
     IMG = GROUND_IMG
 
@@ -307,12 +305,14 @@ def evaluate_genomes(genomes, config):
                 if event.key == pygame.K_s:
                     file_name = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
                         "%H-%M-%S") + ".pkl"
+                    file_name_img = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
+                        "%H-%M-%S")
                     with gzip.open(str(file_name), 'w', compresslevel=5) as f:
-                        data = (genomes[0], nets[0])
+                        data = (gen[0], nets[0])
                         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-                    # with open(str(file_name), 'wb') as handle:
-                    #    data = (genomes[0], nets[0])
-                    #   pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                        node_names = {-1: '1', -2: '2', -3: '3', -4: '4', -5: '5', -6: '6', -6: '6', 0: 'Out'}
+                        visualize.draw_net(config, gen[0], True, filename=file_name_img, node_names=node_names)
+
         which_pipe = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].TOP_PIPE.get_width():
@@ -325,8 +325,6 @@ def evaluate_genomes(genomes, config):
             bird.move()
             gen[x].fitness += 0.1
 
-            # output = nets[x].activate(
-            #    (bird.y, abs(bird.y - pipes[which_pipe].height), abs(bird.y - pipes[which_pipe].bot)))
             output = network_activate(nets[x], bird, pipes[which_pipe], INPUTS)
 
             if output[0] > 0.5:
@@ -417,15 +415,20 @@ def best_main(genomes, config):
     ground = Ground(WINDOW_H - 70)
     pipes = [Pipe(WINDOW_H - 100)]
 
-    Tk().withdraw()
-    filename = askopenfilename()
-    print(filename)
-    os.path.split(filename)
-    finalfilename = os.path.split(filename)[1]
-    print(finalfilename)
+    try:
+        Tk().withdraw()
+        filename = askopenfilename()
+        os.path.split(filename)
+        finalfilename = os.path.split(filename)[1]
+    except FileNotFoundError:
+        main()
+        
+    try:
+        with gzip.open(finalfilename) as f:
+            gen, net = pickle.load(f)
+    except FileNotFoundError:
+        main()
 
-    with gzip.open(finalfilename) as f:
-        gen, net = pickle.load(f)
     bird = FlappyBird(230, 350)
 
     window = pygame.display.set_mode((WINDOW_W, WINDOW_H))
