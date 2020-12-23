@@ -307,11 +307,11 @@ def evaluate_genomes(genomes, config):
                         "%H-%M-%S") + ".pkl"
                     file_name_img = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
                         "%H-%M-%S")
+                    node_names = {-1: '1', -2: '2', -3: '3', -4: '4', -5: '5', -6: '6', -6: '6', 0: 'Out'}
+                    visualize.draw_net(config, gen[0], True, node_names=node_names, file_name=file_name_img)
                     with gzip.open(str(file_name), 'w', compresslevel=5) as f:
                         data = (gen[0], nets[0])
                         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-                        node_names = {-1: '1', -2: '2', -3: '3', -4: '4', -5: '5', -6: '6', -6: '6', 0: 'Out'}
-                        visualize.draw_net(config, gen[0], True, filename=file_name_img, node_names=node_names)
 
         which_pipe = 0
         if len(birds) > 0:
@@ -396,9 +396,12 @@ def run(config_files):
     population.add_reporter(statistics)
 
     winner = population.run(evaluate_genomes, 50)
-    with open('winner.pkl', 'wb') as output:
-        pickle.dump(winner, output, pickle.HIGHEST_PROTOCOL)
-        main()
+    global GEN
+    GEN = 0
+    file_name = "winner" + str(INPUTS) + "inputs_" + datetime.datetime.now().strftime(
+        "%H-%M-%S") + ".pkl"
+    with gzip.open(str(file_name), 'w', compresslevel=5) as f:
+        pickle.dump(winner, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def run_best(config_files):

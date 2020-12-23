@@ -1,7 +1,6 @@
 import pygame
 import os
-import random
-import time
+
 
 from Test import score_screen
 
